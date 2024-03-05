@@ -16,6 +16,7 @@ import warnings
 from agrifoodpy.array_accessor import XarrayAccessorBase
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 def FoodSupply(items, years, quantities, regions=None, elements=None,
                long_format=True):
@@ -543,7 +544,7 @@ class FoodElementSheet(XarrayAccessorBase):
                              "dimension or coordinate of the Dataarray.")
 
         # Collapse remaining dimensions
-        cumsum = cumsum.sum(dim=sum_dims)
+        cumsum = cumsum.sum(dim=sum_dims).squeeze()
         years = fbs.Year.values
 
         # If colors are not defined, generate a list from the standard cycling
@@ -564,6 +565,8 @@ class FoodElementSheet(XarrayAccessorBase):
             labels = fbs[show].values
 
         # Plot
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
         if size_cumsum == 1:
             ax.fill_between(years, cumsum, color=colors[0], alpha=0.5)
             ax.plot(years, cumsum, color=colors[0], linewidth=0.5, label=labels)
