@@ -2,7 +2,6 @@ import numpy as np
 import xarray as xr
 import importlib
 
-from agrifoodpy.pipeline import Node
 # from agrifoodpy.utils import import_dataset
 
 def import_dataset(module_name, dataset_name):
@@ -10,7 +9,7 @@ def import_dataset(module_name, dataset_name):
     dataset = getattr(module, dataset_name)
     return dataset
 
-def load_dataset_setup(datablock, datablock_path, path=None, module=None,
+def load_dataset(datablock, datablock_path, path=None, module=None,
                     data_attr=None, da=None, coords=None, scale=1.):
     """Loads a dataset to the specified datablock dictionary. Can only be used
     in pipeline mode.
@@ -62,8 +61,3 @@ def load_dataset_setup(datablock, datablock_path, path=None, module=None,
     datablock[datablock_path] = dataset * scale
 
     return datablock
-
-def load_dataset_exec(datablock):
-    return datablock
-
-load_dataset = Node(load_dataset_setup, load_dataset_exec)

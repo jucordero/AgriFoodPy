@@ -4,8 +4,6 @@ This class provides methods to build and manage a pipeline for end to end
 simulations using the agrifoodpy package.
 """
 
-from .node import Node
-
 import copy
 from functools import wraps
 from inspect import signature
@@ -13,8 +11,7 @@ from inspect import signature
 class Pipeline():
     def __init__(self):
         self.nodes = []
-        self.setup_params = []
-        self.exec_params = []
+        self.params = []
         self.datablock = {}
 
     def read(cls, filename):
@@ -32,49 +29,30 @@ class Pipeline():
         """
         pass
 
-    def add_node(self, node, setup_params={}, exec_params={}):
+    def add_node(self, node, params={}):
         """Adds a step to the pipeline, including its setup and execution
         functions.
 
         Parameters
         ----------
-        setup_func : function
-            The function to be called at the setup stage of the pipeline.
-
-        setup_params : dict, optional
-            The parameters to be passed to the setup stage function.
-
-        exec_params : dict, optional
-            The parameters to be passed to the execution stage function.
+        node : function
+            The function to be executed on this node.
+        params : dict, optional
+            The parameters to be passed to the node function.
         """
 
         # Copy the parameters to avoid modifying the original dictionaries
-        setup_params = copy.deepcopy(setup_params)
-        exec_params = copy.deepcopy(exec_params)
+        params = copy.deepcopy(params)
 
         self.nodes.append(node)
-        self.setup_params.append(setup_params)
-        self.exec_params.append(exec_params)
+        self.params.append(params)
 
     def run(self):
         """Runs the pipeline
         """
-        self.run_setup()
-        self.run_exec()
-
-    def run_setup(self):
-        """Runs the setup functions for each node
-        """
-        # Execute the setup functions for each node
-        for node, setup_params in zip(self.nodes, self.setup_params):
-            self.datablock = node.setup(datablock = self.datablock, **setup_params)
-
-    def run_exec(self):
-        """Runs the execution functions for each node
-        """
-        # Execute the execution functions for each node
-        for node, exec_params in zip(self.nodes, self.exec_params):
-            self.datablock = node.execute(datablock = self.datablock, **exec_params)
+        # Execute the each of the node functions
+        for node, params in zip(self.nodes, self.params):
+            self.datablock = node(datablock = self.datablock, **params)
 
 
 def standalone(input_keys, return_keys):

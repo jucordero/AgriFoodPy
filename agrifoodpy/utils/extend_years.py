@@ -1,8 +1,8 @@
-from agrifoodpy.pipeline import Node, standalone
+from agrifoodpy.pipeline import standalone
 from agrifoodpy.impact.impact import Impact
 
 @standalone(["dataset"], ["dataset"])
-def extend_years_setup(dataset, years, projection='empty', datablock=None):
+def extend_years(dataset, years, projection='empty', datablock=None):
     """
     Extends the dimensions of a dataset.
     Parameters
@@ -26,9 +26,3 @@ def extend_years_setup(dataset, years, projection='empty', datablock=None):
 
     datablock[dataset] = data 
     return dataset
-
-def extend_years_exec(datablock):
-
-    return datablock
-
-extend_years = Node(extend_years_setup, extend_years_exec)

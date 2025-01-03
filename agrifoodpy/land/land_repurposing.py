@@ -1,13 +1,10 @@
 import xarray as xr
 import numpy as np
 
-from agrifoodpy.pipeline import Node, standalone
-
-def land_repurposing_setup(datablock):
-    return datablock
+from agrifoodpy.pipeline import standalone
 
 @standalone(["land", "mask"], ["land"])
-def land_repurposing_exec(land, land_type, fraction, new_types,
+def land_repurposing(land, land_type, fraction, new_types,
                           ratio=None, mask=None, mask_values=None,
                           datablock=None):
     """Replaces a fraction of an input list of land types by a new or existing
@@ -88,5 +85,3 @@ def land_repurposing_exec(land, land_type, fraction, new_types,
         return datablock[land]
 
     return datablock
-
-land_repurposing = Node(land_repurposing_setup, land_repurposing_exec)

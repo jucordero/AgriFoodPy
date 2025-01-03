@@ -1,12 +1,9 @@
 import numpy as np
 import xarray as xr
-from agrifoodpy.pipeline import Node, standalone
-
-def population_projection_setup(datablock):
-    return datablock
+from agrifoodpy.pipeline import standalone
 
 @standalone(["dataset", "population"], ["dataset"])
-def population_projection_exec(dataset, population, food="food",
+def population_projection(dataset, population, food="food",
                                production="production", imports="imports",
                                exports="exports", per_capita=False,
                                datablock=None):
@@ -84,6 +81,3 @@ def population_projection_exec(dataset, population, food="food",
     datablock[dataset] = fbs
 
     return datablock
-
-population_projection = Node(population_projection_setup,
-                             population_projection_exec)

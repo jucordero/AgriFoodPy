@@ -1,12 +1,9 @@
 import numpy as np
 import xarray as xr
-from agrifoodpy.pipeline import Node, standalone
-
-def quantities_per_capita_setup(datablock):
-    return datablock
+from agrifoodpy.pipeline import standalone
 
 @standalone(input_keys=["fbs"], return_keys=["key"])
-def quantities_per_capita_exec(fbs, population, key=None, datablock=None):
+def quantities_per_capita(fbs, population, key=None, datablock=None):
     """Converts a food balance sheet into per capita quantities.
     
     Parameters
@@ -44,6 +41,3 @@ def quantities_per_capita_exec(fbs, population, key=None, datablock=None):
     datablock[key] = food_cap_day
 
     return datablock
-
-quantities_per_capita = Node(quantities_per_capita_setup,
-                             quantities_per_capita_exec)

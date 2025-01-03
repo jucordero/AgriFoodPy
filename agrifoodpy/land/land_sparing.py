@@ -1,12 +1,7 @@
 import xarray as xr
 import numpy as np
 
-from agrifoodpy.pipeline import Node
-
-def land_sparing_setup(datablock):
-    return datablock
-
-def land_sparing_exec(datablock, spare_fraction, land, land_type,
+def land_sparing(datablock, spare_fraction, land, land_type,
                       spare_label='Spared', mask=None, mask_values=None,
                       food=None, items=None, timescale=None, year_start=None,
                       adoption='logistic'):
@@ -116,5 +111,3 @@ def land_sparing_exec(datablock, spare_fraction, land, land_type,
     # datablock["food"]["g/cap/day"] = out
 
     return datablock
-
-land_sparing = Node(land_sparing_setup, land_sparing_exec)

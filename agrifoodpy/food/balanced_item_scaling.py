@@ -1,14 +1,11 @@
-from agrifoodpy.pipeline import Node, standalone
+from agrifoodpy.pipeline import standalone
 from agrifoodpy.pipeline.utils import item_parser
 import xarray as xr
 import numpy as np
 import warnings
 
-def balanced_item_scaling_setup(datablock):
-    return datablock
-
 @standalone(["dataset"], ["dataset"])
-def balanced_item_scaling_exec(dataset, element, items, scale, source=None,
+def balanced_item_scaling(dataset, element, items, scale, source=None,
                                items_out=None, elasticity=None, constant=True,
                                timescale=None, start_year=None, adoption="logistic",
                                datablock=None, fallback=None, add_fallback=True,
@@ -152,6 +149,3 @@ def _feed_seed_processing_scale(fbs, reference, items_feed=None,
                                 scale=processing_scale)
     
     return out
-
-balanced_item_scaling = Node(balanced_item_scaling_setup,
-                             balanced_item_scaling_exec)

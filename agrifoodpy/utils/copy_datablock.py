@@ -1,10 +1,6 @@
-from agrifoodpy.pipeline import Node
 import copy
 
-def copy_datablock_setup(datablock):
-    return datablock
-
-def copy_datablock_exec(datablock, key, out_key):
+def copy_datablock(datablock, key, out_key):
     """Copy a datablock element into a new key in the datablock
     
     Parameters
@@ -25,5 +21,3 @@ def copy_datablock_exec(datablock, key, out_key):
     datablock[out_key] = copy.deepcopy(datablock[key])
 
     return datablock
-
-copy_datablock = Node(copy_datablock_setup, copy_datablock_exec)

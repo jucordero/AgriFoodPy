@@ -1,14 +1,11 @@
 import xarray as xr
 import numpy as np
 import copy
-from agrifoodpy.pipeline import Node, standalone
+from agrifoodpy.pipeline import standalone
 from agrifoodpy.utils.scaling import logistic_scale
 
-def reduce_excess_setup(datablock):
-    return datablock
-
 @standalone(input_keys=["fbs"], return_keys=["fbs"])
-def reduce_excess_exec(fbs, element, source, threshold, percentage=1.0,
+def reduce_excess(fbs, element, source, threshold, percentage=1.0,
                        timescale=None, start_year=None, scale_feed_seed= False,
                        datablock=None):
     """Reduces a fraction of the sum of an food balance sheet element above a
@@ -83,9 +80,6 @@ def reduce_excess_exec(fbs, element, source, threshold, percentage=1.0,
     datablock[fbs] = out
 
     return datablock
-
-reduce_excess = Node(reduce_excess_setup, 
-                                 reduce_excess_exec)
 
 def feed_scale(fbs, reference):
     """Scales the feed, seed and processing quantities according to the change

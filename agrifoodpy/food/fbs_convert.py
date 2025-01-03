@@ -1,14 +1,10 @@
 import numpy as np
 import xarray as xr
-from agrifoodpy.pipeline import Node
 
 from agrifoodpy.pipeline import standalone
 
-def fbs_convert_setup(datablock):
-    return datablock
-
 @standalone(input_keys=["fbs"], return_keys=["fbs"])
-def fbs_convert_exec(fbs, convertion_arr, keys=None, datablock=None):
+def fbs_convert(fbs, convertion_arr, keys=None, datablock=None):
     """Converts quantities in the food balance sheet using a conversion
     dataarray, dataset, or scaling factor.
     
@@ -51,5 +47,3 @@ def fbs_convert_exec(fbs, convertion_arr, keys=None, datablock=None):
     datablock[keys] = data*convertion_arr
 
     return datablock
-
-fbs_convert = Node(fbs_convert_setup, fbs_convert_exec)

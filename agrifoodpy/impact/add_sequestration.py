@@ -1,12 +1,7 @@
 import xarray as xr
 import numpy as np
 
-from agrifoodpy.pipeline import Node
-
-def add_sequestration_setup(datablock):
-    return datablock
-
-def add_sequestration_exec(datablock, type, max_seq, start_year, timescale,
+def add_sequestration(datablock, type, max_seq, start_year, timescale,
                   food=None, scale_func="logistic"):
     
     """Adds total annual sequestration from different sources according to a 
@@ -73,5 +68,3 @@ def add_sequestration_exec(datablock, type, max_seq, start_year, timescale,
             datablock["sequestration"] = seq_da
 
     return datablock
-
-add_sequestration = Node(add_sequestration_setup, add_sequestration_exec)

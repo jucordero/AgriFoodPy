@@ -1,12 +1,7 @@
 import xarray as xr
 import numpy as np
 
-from agrifoodpy.pipeline import Node
-
-def land_seq_setup(datablock):
-    return datablock
-
-def land_seq_exec(datablock, land, land_type, seq_ha_yr, start_year, timescale,
+def land_sequestration(datablock, land, land_type, seq_ha_yr, start_year, timescale,
                   food=None, scale_func="logistic"):
     
     """Computes total annual sequestration from different land types
@@ -80,5 +75,3 @@ def land_seq_exec(datablock, land, land_type, seq_ha_yr, start_year, timescale,
             datablock["sequestration"] = seq_da
 
     return datablock
-
-land_sequestration = Node(land_seq_setup, land_seq_exec)

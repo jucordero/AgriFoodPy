@@ -1,9 +1,4 @@
-from agrifoodpy.pipeline import Node
-
-def print_datablock_setup(datablock):
-    return datablock
-
-def print_datablock_exec(datablock, key, sel={}):
+def print_datablock(datablock, key, sel={}):
     """Prints a datablock element at any point in the pipeline execution
     
     Parameters
@@ -24,5 +19,3 @@ def print_datablock_exec(datablock, key, sel={}):
     print(datablock[key].sel(sel))
 
     return datablock
-
-print_datablock = Node(print_datablock_setup, print_datablock_exec)

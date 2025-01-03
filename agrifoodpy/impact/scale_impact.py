@@ -1,14 +1,10 @@
 import xarray as xr
 import numpy as np
 
-from agrifoodpy.pipeline import Node, standalone
-
-def scale_impact_setup(datablock):
-
-    return datablock
+from agrifoodpy.pipeline import standalone
 
 @standalone(["impact"], ["impact"])
-def scale_impact_exec(impact, scale_factor, items=None, timescale=None,
+def scale_impact(impact, scale_factor, items=None, timescale=None,
                       start_year=None, scale_func='logistic', datablock=None):
     """Scales impact quantities by a multiplicative factor for selected items.
 
@@ -63,5 +59,3 @@ def scale_impact_exec(impact, scale_factor, items=None, timescale=None,
     datablock[impact] = data
 
     return datablock
-
-scale_impact = Node(scale_impact_setup, scale_impact_exec)

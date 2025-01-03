@@ -1,13 +1,10 @@
 import xarray as xr
 import numpy as np
-from agrifoodpy.pipeline import Node, standalone
+from agrifoodpy.pipeline import standalone
 from agrifoodpy.utils.scaling import logistic_scale
 
-def scale_add_items_setup(datablock):
-    return datablock
-
 @standalone(input_keys=["dataset"], return_keys=["dataset"])
-def scale_add_items_exec(dataset, in_array, out_array, items, scale,
+def scale_add_items(dataset, in_array, out_array, items, scale,
                          add=True, timescale=None, start_year=None,
                          scale_func='logistic', datablock=None):
                          
@@ -72,5 +69,3 @@ def scale_add_items_exec(dataset, in_array, out_array, items, scale,
     datablock[dataset] = data*ratio
 
     return datablock
-
-scale_add_items = Node(scale_add_items_setup, scale_add_items_exec)

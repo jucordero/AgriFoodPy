@@ -2,17 +2,12 @@ import xarray as xr
 import numpy as np
 import copy
 
-from agrifoodpy.pipeline import Node
 from agrifoodpy.pipeline.utils import item_parser
 from agrifoodpy.utils.scaling import logistic_scale
-
 from agrifoodpy.pipeline import standalone
 
-def transfer_item_quantity_setup(datablock):
-    return datablock
-
 @standalone(input_keys=["dataset"], return_keys=["dataset"])
-def transfer_item_quantity_exec(dataset, element, item, item_out, scale, source,
+def transfer_item_quantity(dataset, element, item, item_out, scale, source,
                                 fallback=None, timescale=None, start_year=None,
                                 scale_feed_seed=False, datablock=None):
     """Reduces a fraction of the total quantity of an item and adds that
@@ -131,6 +126,3 @@ def _feed_seed_processing_scale(fbs, reference, items_feed=None,
                                 scale=processing_scale)
     
     return out
-
-transfer_item_quantity = Node(transfer_item_quantity_setup,
-                              transfer_item_quantity_exec)

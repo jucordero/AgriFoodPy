@@ -2,14 +2,11 @@ import xarray as xr
 import numpy as np
 import copy
 
-from agrifoodpy.pipeline import Node, standalone
+from agrifoodpy.pipeline import standalone
 from agrifoodpy.food import food
 
-def add_items_setup(datablock):
-    return datablock
-
 @standalone(["dataset"], ["dataset"])
-def add_items_exec(dataset, items, values=None, copy_from=None, datablock=None):
+def add_items(dataset, items, values=None, copy_from=None, datablock=None):
     """Adds a list of items to a selected dataset in the datablock and
     initializes their values.
 
@@ -61,5 +58,3 @@ def add_items_exec(dataset, items, values=None, copy_from=None, datablock=None):
     datablock[dataset] = data
 
     return datablock
-
-add_items = Node(add_items_setup, add_items_exec)
