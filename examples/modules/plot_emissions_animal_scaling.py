@@ -25,7 +25,7 @@ from agrifoodpy.impact.model import fbs_impacts
 from matplotlib import pyplot as plt
 
 # Load FAOSTAT array to memory.
-FAOSTAT.load();
+FAOSTAT.load()
 
 # Select food items and production values for the UK and the US
 # Values are in [1000 Tonnes]
@@ -33,7 +33,7 @@ country_codes = [229, 231]
 food = FAOSTAT.sel(Region=country_codes)["production"]
 
 # Convert emissions from [g CO2e] to [Gt CO2e]
-ghg_emissions = PN18["GHG Emissions"] / 1e6
+ghg_emissions = PN18["GHG Emissions (IPCC 2013)"] / 1e6
 food_emissions = fbs_impacts(food, ghg_emissions)
 
 ax = food_emissions.fbs.plot_years(show="Region", labels=["UK", "USA"])

@@ -6,8 +6,7 @@ from agrifoodpy.utils.scaling import logistic_scale
 
 @standalone(input_keys=["fbs"], return_keys=["fbs"])
 def reduce_excess(fbs, element, source, threshold, percentage=1.0,
-                       timescale=None, start_year=None, scale_feed_seed= False,
-                       datablock=None):
+                       timescale=None, start_year=None, datablock=None):
     """Reduces a fraction of the sum of an food balance sheet element above a
     specified threshold.
     
@@ -72,39 +71,9 @@ def reduce_excess(fbs, element, source, threshold, percentage=1.0,
     # If supply element is negative, set to zero and add the negative delta to imports
     out = check_negative_source(out, source)
 
-    # Scale feed, seed and processing
-    if scale_feed_seed:
-        out = feed_scale(out, food)
-        print("scaling feed and seed")
-
     datablock[fbs] = out
 
     return datablock
-
-def feed_scale(fbs, reference):
-    """Scales the feed, seed and processing quantities according to the change
-    in production of animal and vegetal products"""
-
-    feed_scale = fbs["production"].sel(Item=fbs.Item_origin=="Animal Products").sum(dim="Item") \
-                / reference["production"].sel(Item=reference.Item_origin=="Animal Products").sum(dim="Item")
-    print(feed_scale)
-
-    seed_scale = fbs["production"].sel(Item=fbs.Item_origin=="Vegetal Products").sum(dim="Item") \
-                / reference["production"].sel(Item=reference.Item_origin=="Vegetal Products").sum(dim="Item")
-    
-    processing_scale = fbs["production"].sum(dim="Item") \
-                / reference["production"].sum(dim="Item")
-
-    out = fbs.fbs.scale_add(element_in="feed", element_out="production",
-                            scale=feed_scale)
-    
-    out = out.fbs.scale_add(element_in="seed",element_out="production",
-                            scale=seed_scale)
-    
-    out = out.fbs.scale_add(element_in="processing",element_out="production",
-                            scale=processing_scale)
-    
-    return out
 
 def check_negative_source(fbs, source):
     """Checks for negative values in the source element and adds the difference

@@ -8,8 +8,7 @@ import warnings
 def balanced_item_scaling(dataset, element, items, scale, source=None,
                                items_out=None, elasticity=None, constant=True,
                                timescale=None, start_year=None, adoption="logistic",
-                               datablock=None, fallback=None, add_fallback=True,
-                               scale_feed_seed=False):
+                               datablock=None, fallback=None, add_fallback=True):
     """
     Scales selected item quantities in a Food balance sheet while keeping the
     total sum in an array constant.
@@ -102,12 +101,6 @@ def balanced_item_scaling(dataset, element, items, scale, source=None,
             for org in source:
                 out[org] = out[org].where(out[org] > 0, 0)
 
-    if scale_feed_seed:
-        out = _feed_seed_processing_scale(out, data,
-                                          items_feed=("Item_origin", "Animal Products"),
-                                          items_seed=("Item_origin", "Vegetal Products"),
-                                          items_processing=out.Item.values)
-
     ratio = out / data
     ratio = ratio.where(~np.isnan(ratio), 1)
 
@@ -115,37 +108,3 @@ def balanced_item_scaling(dataset, element, items, scale, source=None,
 
     return datablock
 
-def _feed_seed_processing_scale(fbs, reference, items_feed=None,
-                                items_seed=None, items_processing=None,
-                                feed="feed", seed="seed",
-                                processing="processing",
-                                production="production"):
-    """Scales the feed, seed and processing quantities according to the change
-    in production of specific items"""
-
-    items_feed = item_parser(fbs, items_feed)
-    items_seed = item_parser(fbs, items_seed)
-    items_processing = item_parser(fbs, items_processing)
-
-    if items_feed is not None:
-        feed_scale = fbs[production].sel(Item=items_feed).sum(dim="Item") \
-                    / reference[production].sel(Item=items_feed).sum(dim="Item")
-
-        out = fbs.fbs.scale_add(element_in=feed, element_out=production,
-                                scale=feed_scale)
-
-    if items_seed is not None:
-        seed_scale = fbs[production].sel(Item=items_seed).sum(dim="Item") \
-                    / reference[production].sel(Item=items_seed).sum(dim="Item")
-                
-        out = out.fbs.scale_add(element_in=seed, element_out=production,
-                                scale=seed_scale)    
-
-    if items_processing is not None:
-        processing_scale = fbs[production].sel(Item=items_processing).sum(dim="Item") \
-                    / reference[production].sel(Item=items_processing).sum(dim="Item")
-
-        out = out.fbs.scale_add(element_in=processing, element_out=production,
-                                scale=processing_scale)
-    
-    return out

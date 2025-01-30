@@ -5,13 +5,13 @@ from agrifoodpy.pipeline import standalone
 
 @standalone(["impact"], ["impact"])
 def scale_impact(impact, scale_factor, items=None, timescale=None,
-                      start_year=None, scale_func='logistic', datablock=None):
+                 start_year=None, scale_func='logistic', datablock=None):
     """Scales impact quantities by a multiplicative factor for selected items.
 
     Parameters
     ----------
     impact : str
-        Datablock key for the impact dataset.
+        Datablock key for the impact dataset, or the impact dataset itself.
     scale_factor : float
         Multiplicative factor to scale the impact quantities by.
     items : list

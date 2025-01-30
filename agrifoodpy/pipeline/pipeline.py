@@ -9,11 +9,15 @@ from functools import wraps
 from inspect import signature
 
 class Pipeline():
+    '''Class for constructing and running pipelines of functions with
+    individual sets of parameters.'''
     def __init__(self):
         self.nodes = []
         self.params = []
+        self.names = []
         self.datablock = {}
 
+    @classmethod
     def read(cls, filename):
         """Read a pipeline from a configuration file
 
@@ -27,11 +31,11 @@ class Pipeline():
         pipeline : Pipeline
             The pipeline object.
         """
-        pass
+        raise NotImplementedError("This method is not yet implemented.")
 
-    def add_node(self, node, params={}):
-        """Adds a step to the pipeline, including its setup and execution
-        functions.
+    def add_node(self, node, params={}, name=None):
+        """Adds a node to the pipeline, including its function and execution
+        parameters.
 
         Parameters
         ----------
@@ -39,21 +43,41 @@ class Pipeline():
             The function to be executed on this node.
         params : dict, optional
             The parameters to be passed to the node function.
+        name : str, optional
+            The name of the node. If not provided, a generic name will be
+            assigned.            
         """
 
         # Copy the parameters to avoid modifying the original dictionaries
         params = copy.deepcopy(params)
 
+        if name is None:
+            name = "Node {}".format(len(self.nodes) + 1)
+
+        self.names.append(name)
         self.nodes.append(node)
         self.params.append(params)
 
-    def run(self):
+    def run(self, from_node=0, to_node=None):
         """Runs the pipeline
-        """
-        # Execute the each of the node functions
-        for node, params in zip(self.nodes, self.params):
-            self.datablock = node(datablock = self.datablock, **params)
 
+        Parameters
+        ----------
+        from_node : int, optional
+            The index of the first node to be executed. Defaults to 0.
+
+        to_node : int, optional
+            The index of the last node to be executed. If not provided, all
+            nodes will be executed
+        """
+        if to_node is None:
+            to_node = len(self.nodes)
+
+        # Execute the node functions within the specified range
+        for i in range(from_node, to_node):
+            node = self.nodes[i]
+            params = self.params[i]
+            self.datablock = node(datablock=self.datablock, **params)
 
 def standalone(input_keys, return_keys):
     """ Decorator to make a pipeline node available as a standalone function
@@ -91,6 +115,12 @@ def standalone(input_keys, return_keys):
             # Make sure that the datablock is passed as a kwarg, if not, create it
             datablock = kwargs.get("datablock", None)
 
+            # Fill in missing arguments with their default values
+            for key, param in func_params.items():
+                if key not in kwargs:
+                    if param.default is not param.empty:  # Check if there's a default value
+                        kwargs[key] = param.default
+
             standalone = datablock is None
             if standalone:
                 # Create datablock
@@ -102,14 +132,15 @@ def standalone(input_keys, return_keys):
                     if kwargs.get(key, None) is not None:
                         kwargs[key] = key
             
+            print(kwargs)
             result = test_func(**kwargs)
 
             # return tuple of results
             if standalone:
                 if len(return_keys) == 1:
-                    return result[return_keys[0]]
+                    return result[kwargs[return_keys[0]]]
                 else:
-                    return tuple(result[key] for key in return_keys)
+                    return tuple(kwargs[result[key]] for key in return_keys)
 
             return result
         return wrapper

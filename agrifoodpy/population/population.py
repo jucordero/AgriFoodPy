@@ -1,5 +1,4 @@
-"""Population module.
-"""
+"""Population module."""
 
 import numpy as np
 import xarray as xr
@@ -30,8 +29,7 @@ def population(years, regions, quantities, datasets=None, long_format=True):
     -------
     data : xarray.Dataset
         Population dataset containing the population for each `Year` and
-        `Region` with one dataarray per element in `dataset`.
-    """
+        `Region` with one dataarray per element in `dataset`."""
 
     # if the input has a single element, proceed with long format
     if np.isscalar(quantities):
