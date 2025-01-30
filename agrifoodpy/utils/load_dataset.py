@@ -2,15 +2,17 @@ import numpy as np
 import xarray as xr
 import importlib
 
-# from agrifoodpy.utils import import_dataset
+from agrifoodpy.pipeline import standalone
 
 def import_dataset(module_name, dataset_name):
     module = importlib.import_module(module_name)
     dataset = getattr(module, dataset_name)
     return dataset
 
-def load_dataset(datablock, datablock_path, path=None, module=None,
-                    data_attr=None, da=None, coords=None, scale=1.):
+@standalone([], ['datablock_path'])
+def load_dataset(datablock_path="data", path=None, module=None,
+                    data_attr=None, da=None, coords=None, scale=1.,
+                    datablock=None):
     """Loads a dataset to the specified datablock dictionary. Can only be used
     in pipeline mode.
 

@@ -39,9 +39,10 @@ def population_projection(dataset, population, food="food",
     -------
     dict or xarray.Dataset
         - If no datablock is provided, returns the xarray.Dataset with projected
-        quantities.
+          quantities.
         - If a datablock is provided, returns the datablock with the scaled
-        element array on thei corresponding key.
+          element array on thei corresponding key.
+
     """
 
     pop = datablock[population]

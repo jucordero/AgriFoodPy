@@ -132,7 +132,6 @@ def standalone(input_keys, return_keys):
                     if kwargs.get(key, None) is not None:
                         kwargs[key] = key
             
-            print(kwargs)
             result = test_func(**kwargs)
 
             # return tuple of results

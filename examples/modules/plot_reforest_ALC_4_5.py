@@ -16,21 +16,20 @@ Both have the same pixel scale and are defined over the same spatial grid.
 
 """
 
-
 import numpy as np
 import xarray as xr
-
-from agrifoodpy_data.land import UKCEH_LC_1000 as LC, NaturalEngland_ALC_1000 as ALC
-
-from agrifoodpy.land.land import LandDataArray
-from agrifoodpy.land.model import land_sequestration
-import agrifoodpy.food
-
 from matplotlib import pyplot as plt
 
-land_use = LC.copy(deep=True)
-land_use = land_use["dominant_aggregate"]
-ALC = ALC.grade
+from agrifoodpy.utils.load_dataset import load_dataset
+from agrifoodpy.land.model import land_repurposing
+
+land_use = load_dataset(module="agrifoodpy_data.land",
+                  data_attr="UKCEH_LC_1000",
+                  da="dominant_aggregate")
+
+ALC = load_dataset(module="agrifoodpy_data.land",
+                   data_attr="NaturalEngland_ALC_1000",
+                   da="grade")
 
 f, axes = plt.subplots(1, 2, sharey=True)
 plt.subplots_adjust(wspace=0)
@@ -56,15 +55,24 @@ broadleaf_max_seq = 5.7
 coniferous_max_seq = 14
 broadleaf_fraction = 0.5
 
-seq_forest= broadleaf_max_seq * (broadleaf_fraction) + \
-                     coniferous_max_seq * (1-broadleaf_fraction)
+# land_use_forested = land_repurposing(land=land_use,
+#                                      land_type=["Semi-natural grassland", "Improved grassland"],
+#                                      fraction=0.5,
+#                                      new_types=["Broadleaf woodland", "Coniferous woodland"],
+#                                      mask=ALC,
+#                                      mask_values=[4,5])
 
-co2e_seq = land_sequestration(land_use, [1,2], max_seq=seq_forest,
-                     fraction=[0.0, pasture_4_5/total_area_england*0.5],
-                     years = np.arange(2020,2070),
-                     growth_timescale=25)
+# land_use_forested.land.plot()
 
-ax = co2e_seq.fbs.plot_years()
-ax.set_ylabel("[t CO2 / yr]")
-ax.set_xlabel("Year")
-plt.show()
+# seq_forest= broadleaf_max_seq * (broadleaf_fraction) + \
+#                      coniferous_max_seq * (1-broadleaf_fraction)
+
+# co2e_seq = land_sequestration(land_use, [1,2], max_seq=seq_forest,
+#                      fraction=[0.0, pasture_4_5/total_area_england*0.5],
+#                      years = np.arange(2020,2070),
+#                      growth_timescale=25)
+
+# ax = co2e_seq.fbs.plot_years()
+# ax.set_ylabel("[t CO2 / yr]")
+# ax.set_xlabel("Year")
+# plt.show()

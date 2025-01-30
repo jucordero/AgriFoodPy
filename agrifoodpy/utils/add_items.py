@@ -30,9 +30,10 @@ def add_items(dataset, items, values=None, copy_from=None, datablock=None):
     -------
     dict or xarray.Dataset
         - If no datablock is provided, returns a xarray.Dataset with the new
-        items.
+          items.
         - If a datablock is provided, returns the datablock with the modified
-        datasets on the corresponding keys.
+          datasets on the corresponding keys.
+
     """
 
     # Check if items is a dictionary

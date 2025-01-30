@@ -5,6 +5,7 @@ from agrifoodpy.impact.impact import Impact
 def extend_years(dataset, years, projection='empty', datablock=None):
     """
     Extends the dimensions of a dataset.
+    
     Parameters
     ----------
     datablock : dict
