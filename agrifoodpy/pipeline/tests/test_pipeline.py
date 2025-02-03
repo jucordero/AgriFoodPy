@@ -1,4 +1,3 @@
-import unittest
 from agrifoodpy.pipeline.pipeline import Pipeline, standalone
 
 def test_init():
@@ -82,3 +81,23 @@ def test_standalone_decorator():
     pipeline.add_node(test_func, params={'input1': 5, 'output1': 'output1'})
     pipeline.run()
     assert(pipeline.datablock['output1'] == 10)
+
+def test_datablock_write():
+    pipeline = Pipeline()
+    pipeline.datablock_write(['a', 'b', 'c'], 10)
+    assert(pipeline.datablock['a']['b']['c'] == 10)
+
+    pipeline.datablock_write(['a', 'b', 'd'], 20)
+    assert(pipeline.datablock['a']['b']['c'] == 10)
+    assert(pipeline.datablock['a']['b']['d'] == 20)
+
+    pipeline.datablock_write(['a', 'e'], 30)
+    assert(pipeline.datablock['a']['b']['c'] == 10)
+    assert(pipeline.datablock['a']['b']['d'] == 20)
+    assert(pipeline.datablock['a']['e'] == 30)
+
+    pipeline.datablock_write(['f'], 40)
+    assert(pipeline.datablock['a']['b']['c'] == 10)
+    assert(pipeline.datablock['a']['b']['d'] == 20)
+    assert(pipeline.datablock['a']['e'] == 30)
+    assert(pipeline.datablock['f'] == 40)
