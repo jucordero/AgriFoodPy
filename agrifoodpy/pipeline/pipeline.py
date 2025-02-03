@@ -11,11 +11,14 @@ from inspect import signature
 class Pipeline():
     '''Class for constructing and running pipelines of functions with
     individual sets of parameters.'''
-    def __init__(self):
+    def __init__(self, datablock=None):
         self.nodes = []
         self.params = []
         self.names = []
-        self.datablock = {}
+        if datablock is not None:
+            self.datablock = datablock
+        else:
+            self.datablock = {}
 
     @classmethod
     def read(cls, filename):
@@ -32,7 +35,23 @@ class Pipeline():
             The pipeline object.
         """
         raise NotImplementedError("This method is not yet implemented.")
+    
+    def datablock_write(self, path, value):
+        """Writes a single value to the datablock at the specified path.
 
+        Parameters
+        ----------
+        path : list
+            The datablock path to the value to be written.
+        value : any
+            The value to be written.
+        """
+        current = self.datablock
+
+        for key in path[:-1]:
+            current = current.setdefault(key, {})
+        current[path[-1]] = value
+    
     def add_node(self, node, params={}, name=None):
         """Adds a node to the pipeline, including its function and execution
         parameters.
