@@ -7,6 +7,7 @@ simulations using the agrifoodpy package.
 import copy
 from functools import wraps
 from inspect import signature
+import time
 
 class Pipeline():
     '''Class for constructing and running pipelines of functions with
@@ -77,7 +78,7 @@ class Pipeline():
         self.nodes.append(node)
         self.params.append(params)
 
-    def run(self, from_node=0, to_node=None):
+    def run(self, from_node=0, to_node=None, timing=False):
         """Runs the pipeline
 
         Parameters
@@ -88,15 +89,38 @@ class Pipeline():
         to_node : int, optional
             The index of the last node to be executed. If not provided, all
             nodes will be executed
+
+        timing : bool, optional
+            If True, the execution time of each node will be printed. Defaults
+            to False.
         """
+
         if to_node is None:
             to_node = len(self.nodes)
+
+        pipeline_start_time = time.time()
 
         # Execute the node functions within the specified range
         for i in range(from_node, to_node):
             node = self.nodes[i]
             params = self.params[i]
+
+            node_start_time = time.time()
+
+            # Run node
             self.datablock = node(datablock=self.datablock, **params)
+
+            node_end_time = time.time()
+            node_time = node_end_time - node_start_time
+
+            if timing:
+                print(f"Node {i + 1} ({self.names[i]}) executed in {node_time:.4f} seconds.")
+
+        pipeline_end_time = time.time()
+        pipeline_time = pipeline_end_time - pipeline_start_time
+
+        if timing:
+            print(f"Pipeline executed in {pipeline_time:.4f} seconds.")
 
 def standalone(input_keys, return_keys):
     """ Decorator to make a pipeline node available as a standalone function

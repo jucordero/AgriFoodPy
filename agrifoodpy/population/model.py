@@ -4,12 +4,19 @@ from agrifoodpy.pipeline import standalone
 
 @standalone(["dataset", "population"], ["dataset"])
 def population_projection(dataset, population, food="food",
-                               production="production", imports="imports",
-                               exports="exports", per_capita=False,
-                               datablock=None):
+                          production="production", imports="imports",
+                          exports="exports", per_capita=False, datablock=None):
     
     """Projects a food balance sheet into the future using a population
     dataset.
+
+    This function scales the food balance sheet dataset based on a population
+    dataset. It can handle both per capita and total food quantities. The
+    population dataset is used to project future values, and the food balance
+    sheet is adjusted accordingly. The function can either return a modified
+    datablock with the updated food balance sheet or return the updated
+    xarray.Dataset directly. It assumes production and exports remain
+    constant, while imports scale with population growth.
     
     Parameters
     ----------
