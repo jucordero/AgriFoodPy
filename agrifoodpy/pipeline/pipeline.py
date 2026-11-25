@@ -7,6 +7,7 @@ simulations using the agrifoodpy package.
 import copy
 from functools import wraps
 from inspect import signature
+from pathlib import Path
 import time
 import yaml
 import importlib
@@ -75,7 +76,10 @@ class Pipeline():
 
     @classmethod
     def read(cls, filename):
-        """Read a pipeline configuration from a YAML file
+        """Read a pipeline configuration from a YAML file.
+
+        Nodes with a ``load`` key include another YAML configuration in place.
+        Relative paths are resolved against the containing file.
 
         Parameters
         ----------
@@ -148,13 +152,38 @@ class Pipeline():
             Loader=yaml.FullLoader,
         )
 
-        with open(filename, "r") as f:
-            config = yaml.load(f, Loader=yaml.FullLoader)
-
         pipeline = cls()
 
-        if config is not None:
+        def load_file(file_path, active_paths):
+            file_path = Path(file_path).resolve()
+            if file_path in active_paths:
+                chain = " -> ".join(str(path) for path in (*active_paths, file_path))
+                raise ValueError(f"Circular YAML load detected: {chain}")
+
+            with file_path.open("r") as f:
+                config = yaml.load(f, Loader=yaml.FullLoader)
+
+            if config is None:
+                return
+
             for step in config["nodes"]:
+                if not isinstance(step, dict):
+                    raise ValueError(f"Invalid node in '{file_path}': expected a mapping.")
+
+                if "load" in step:
+                    if set(step) != {"load"}:
+                        raise ValueError(
+                            f"Invalid load directive in '{file_path}': "
+                            "'load' cannot be combined with other keys."
+                        )
+                    if not isinstance(step["load"], str) or not step["load"].strip():
+                        raise ValueError(
+                            f"Invalid load directive in '{file_path}': "
+                            "expected a non-empty path string."
+                        )
+                    load_file(file_path.parent / step["load"], (*active_paths, file_path))
+                    continue
+
                 func = cls._load_function(step["function"])
                 params = step.get("params", {})
                 name = step.get("name", func.__name__)
@@ -165,6 +194,7 @@ class Pipeline():
                 pipeline.names.append(name)
                 pipeline.skip.append(skip)
 
+        load_file(filename, ())
         return pipeline
 
     def datablock_write(self, path, value):
@@ -400,6 +430,59 @@ class Pipeline():
 
         # Set the skip flag
         self.skip[index] = skip
+
+    def read_from_file(self, file_path, on_conflict="error"):
+        """Read pipeline node configurations from a file and appends them to
+        the current pipeline.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to the file containing the pipeline configuration.
+        on_conflict : {"error", "replace", "skip", "rename"}, optional
+            How to handle new nodes whose name matches a node already in the
+            pipeline. "error" raises a ValueError before modifying the
+            pipeline, "replace" overwrites the existing node in place,
+            "skip" discards the new node, and "rename" appends the new node
+            with a numeric suffix (e.g. "name_2"). Default is "error".
+        """
+        if on_conflict not in ("error", "replace", "skip", "rename"):
+            raise ValueError(
+                "on_conflict must be one of 'error', 'replace', 'skip' or "
+                f"'rename', got '{on_conflict}'."
+            )
+
+        new = self.read(file_path)
+
+        if on_conflict == "error":
+            conflicts = [n for n in new.names if n in self.names]
+            if conflicts:
+                raise ValueError(
+                    f"Node names already present in pipeline: {conflicts}."
+                )
+
+        for node, params, name, skip in zip(
+            new.nodes, new.params, new.names, new.skip
+        ):
+            if name in self.names:
+                if on_conflict == "skip":
+                    continue
+                if on_conflict == "replace":
+                    index = self.names.index(name)
+                    self.nodes[index] = node
+                    self.params[index] = params
+                    self.skip[index] = skip
+                    continue
+                if on_conflict == "rename":
+                    base, i = name, 2
+                    while f"{base}_{i}" in self.names:
+                        i += 1
+                    name = f"{base}_{i}"
+
+            self.nodes.append(node)
+            self.params.append(params)
+            self.names.append(name)
+            self.skip.append(skip)
 
 
 def standalone(input_keys, return_keys):

@@ -540,6 +540,124 @@ def test_pipeline_node_multi_output_and_return_keys():
         pipeline_ambiguous_keys.run()
 
 
+def test_read_yaml_load_in_order(tmp_path):
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    (tmp_path / "main.yaml").write_text(
+        "nodes:\n"
+        "  - function: agrifoodpy.utils.nodes.write_to_datablock\n"
+        "    name: first\n"
+        "    params: {key: result, value: first}\n"
+        "  - load: nested/sub.yaml\n"
+        "  - function: agrifoodpy.utils.nodes.write_to_datablock\n"
+        "    name: last\n"
+        "    params: {key: result, value: last}\n"
+    )
+    (nested / "sub.yaml").write_text(
+        "nodes:\n"
+        "  - function: agrifoodpy.utils.nodes.write_to_datablock\n"
+        "    name: middle\n"
+        "    params: {key: result, value: middle}\n"
+        "  - load: ../leaf.yaml\n"
+    )
+    (tmp_path / "leaf.yaml").write_text(
+        "nodes:\n"
+        "  - function: agrifoodpy.utils.nodes.write_to_datablock\n"
+        "    name: leaf\n"
+        "    params: {key: result, value: leaf}\n"
+    )
+
+    pipeline = Pipeline.read(tmp_path / "main.yaml")
+
+    assert pipeline.names == ["first", "middle", "leaf", "last"]
+    pipeline.run()
+    assert pipeline.datablock["result"] == "last"
+
+
+def test_read_yaml_load_repeated_absolute_and_tagged(tmp_path):
+    included = tmp_path / "included.yaml"
+    included.write_text(
+        "nodes:\n"
+        "  - function: agrifoodpy.utils.nodes.write_to_datablock\n"
+        "    name: repeated\n"
+        "    skip: true\n"
+        "    params: {key: result, value: !numpy.array [[1, 2]]}\n"
+    )
+    (tmp_path / "empty.yaml").write_text("")
+    (tmp_path / "main.yaml").write_text(
+        f"nodes:\n  - load: '{included}'\n"
+        "  - load: empty.yaml\n"
+        "  - load: included.yaml\n"
+    )
+
+    pipeline = Pipeline.read(tmp_path / "main.yaml")
+
+    assert pipeline.names == ["repeated", "repeated"]
+    assert pipeline.skip == [True, True]
+    assert all(np.array_equal(params["value"], [1, 2]) for params in pipeline.params)
+    pipeline.run()
+    assert pipeline.datablock == {}
+
+
+def test_read_yaml_load_cycle(tmp_path):
+    (tmp_path / "main.yaml").write_text("nodes:\n  - load: sub.yaml\n")
+    (tmp_path / "sub.yaml").write_text("nodes:\n  - load: ./main.yaml\n")
+
+    with pytest.raises(ValueError, match="Circular YAML load detected") as error:
+        Pipeline.read(tmp_path / "main.yaml")
+
+    assert "main.yaml" in str(error.value)
+    assert "sub.yaml" in str(error.value)
+
+
+@pytest.mark.parametrize("directive", [
+    "load: null",
+    "load: 123",
+    "load: ''",
+    "load: '   '",
+    "load: [sub.yaml]",
+    "load: sub.yaml\n    function: some.function",
+])
+def test_read_yaml_load_invalid_directive(tmp_path, directive):
+    config = tmp_path / "main.yaml"
+    config.write_text(f"nodes:\n  - {directive}\n")
+
+    with pytest.raises(ValueError, match="Invalid load directive") as error:
+        Pipeline.read(config)
+
+    assert "main.yaml" in str(error.value)
+
+
+def test_read_yaml_load_missing_file(tmp_path):
+    config = tmp_path / "main.yaml"
+    config.write_text("nodes:\n  - load: missing.yaml\n")
+
+    with pytest.raises(FileNotFoundError) as error:
+        Pipeline.read(config)
+
+    assert error.value.filename == str(tmp_path / "missing.yaml")
+
+
+def test_read_from_file_load_conflict(tmp_path):
+    (tmp_path / "included.yaml").write_text(
+        "nodes:\n"
+        "  - function: agrifoodpy.utils.nodes.write_to_datablock\n"
+        "    name: existing\n"
+        "    params: {key: result, value: new}\n"
+    )
+    config = tmp_path / "main.yaml"
+    config.write_text("nodes:\n  - load: included.yaml\n")
+    pipeline = Pipeline()
+    pipeline.add_node(lambda datablock: datablock, name="existing")
+
+    with pytest.raises(ValueError, match="Node names already present"):
+        pipeline.read_from_file(config)
+    assert pipeline.names == ["existing"]
+
+    pipeline.read_from_file(config, on_conflict="rename")
+    assert pipeline.names == ["existing", "existing_2"]
+
+
 # Test reading YAML config with numpy array parameters and values
 def test_read_yaml_numpy_array():
     

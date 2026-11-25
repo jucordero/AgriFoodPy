@@ -51,6 +51,30 @@ and ``function`` is the name of the function to be executed.
 The parameters are specified as a dictionary of key-value pairs,
 where the keys are the parameter names.
 
+Including configuration files
+-----------------------------
+
+Use a ``load`` entry in the ``nodes`` list to insert the nodes from another
+configuration file at that position:
+
+.. code-block:: yaml
+
+  nodes:
+    - function: some.function
+      name: first
+    - load: configs/sub_pipeline.yaml
+    - function: some.other.function
+      name: last
+
+Each included file has the same format as a pipeline configuration and can
+itself include other files. Relative paths are resolved from the directory of
+the file containing the ``load`` entry; absolute paths are also supported.
+The same file may be included more than once, but circular includes are rejected.
+A ``load`` entry must contain only the ``load`` key. Included node names are not
+automatically changed, so repeated includes can produce duplicate names.
+When using ``read_from_file``, its existing conflict policy applies to the
+expanded pipeline.
+
 YAML constructors
 -----------------
 
